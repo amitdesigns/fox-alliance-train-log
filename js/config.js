@@ -7,3 +7,12 @@ const firebaseConfig = {
   appId: "1:484011286679:web:2e757e9e955ddf8cd349d2",
   measurementId: "G-WNNG3GBJLZ"
 };
+
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(app);
+const auth = firebase.auth(app);
+
+// Disable Firestore persistence (causes CSP issues)
+db.disablePersistence().catch((err) => {
+  console.log("Persistence disabled:", err);
+});
