@@ -1,1 +1,26 @@
+body {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
 
+h1 {
+    color: #e67e22;
+}
+
+.table {
+    margin-top: 20px;
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+#edit-form {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.edit-btn {
+    display: none;
+}
