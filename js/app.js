@@ -8,13 +8,13 @@ let editingId = null;
 
 // DOM Elements
 const loginBtn = document.getElementById('login-btn');
+const addNewBtn = document.getElementById('add-new-btn');
 const logTable = document.getElementById('log-table');
 const editForm = document.getElementById('edit-form');
 const entryForm = document.getElementById('entry-form');
 const loginModal = new bootstrap.Modal(document.getElementById('login-modal'));
 const loginForm = document.getElementById('login-form');
 const formTitle = document.getElementById('form-title');
-const addNewBtn = document.getElementById('add-new-btn');
 
 // Event Listeners
 loginBtn.addEventListener('click', toggleLogin);
@@ -22,6 +22,14 @@ loginForm.addEventListener('submit', handleLogin);
 entryForm.addEventListener('submit', saveEntry);
 document.getElementById('cancel-edit').addEventListener('click', cancelEdit);
 addNewBtn.addEventListener('click', addNewEntry);
+
+// Auth State Listener
+auth.onAuthStateChanged(user => {
+    currentUser = user;
+    updateUI();
+    loadLogs();
+    console.log("Auth state changed. User:", user ? user.email : "None");
+});
 
 function toggleLogin() {
     if (currentUser) {
@@ -48,14 +56,12 @@ function updateUI() {
     if (currentUser) {
         loginBtn.textContent = 'Admin Logout';
         loginBtn.className = 'btn btn-sm btn-outline-danger';
-        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'inline-block');
-        addNewBtn.style.display = 'block';
+        addNewBtn.style.display = 'inline-block';
     } else {
         loginBtn.textContent = 'Admin Login';
         loginBtn.className = 'btn btn-sm btn-outline-primary';
-        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'none');
         addNewBtn.style.display = 'none';
-        cancelEdit();
+        editForm.style.display = 'none';
     }
 }
 
@@ -94,6 +100,7 @@ function loadLogs() {
         html += `</tbody></table>`;
         logTable.innerHTML = html;
         
+        // Add event listeners to edit buttons
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', () => editEntry(btn.dataset.id));
         });
@@ -104,9 +111,8 @@ function addNewEntry() {
     editingId = null;
     formTitle.textContent = 'Add New Entry';
     entryForm.reset();
-    document.getElementById('log-date').valueAsDate = new Date(); // Set today's date
-    editForm.classList.remove('d-none');
-    window.scrollTo(0, document.body.scrollHeight);
+    document.getElementById('log-date').valueAsDate = new Date();
+    editForm.style.display = 'block';
 }
 
 function editEntry(id) {
@@ -119,14 +125,13 @@ function editEntry(id) {
         document.getElementById('person1').value = data.person1;
         document.getElementById('person2').value = data.person2;
         document.getElementById('person3').value = data.person3;
-        editForm.classList.remove('d-none');
-        window.scrollTo(0, document.body.scrollHeight);
+        editForm.style.display = 'block';
     });
 }
 
 function cancelEdit() {
     editingId = null;
-    editForm.classList.add('d-none');
+    editForm.style.display = 'none';
 }
 
 function saveEntry(e) {
@@ -145,7 +150,6 @@ function saveEntry(e) {
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
     
-    // Determine if we're adding new or editing existing
     const operation = editingId 
         ? db.collection('logs').doc(editingId).update(entry)
         : db.collection('logs').add(entry);
