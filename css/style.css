@@ -38,3 +38,33 @@ h1 {
 .card {
     border: 1px solid rgba(0, 0, 0, 0.125);
 }
+.table {
+    color: var(--snow-white) !important; /* Force white text */
+}
+
+.table th, .table td {
+    border-color: var(--ice-blue) !important; /* Ice-colored borders */
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(168, 216, 234, 0.15) !important; /* Lighter ice stripes */
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: rgba(31, 41, 71, 0.8) !important; /* Dark ice background */
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(124, 110, 232, 0.3) !important; /* Brighter purple hover */
+}
+
+/* Make sure buttons stand out */
+.btn-warning {
+    color: #3a4a7b !important; /* Dark text on yellow buttons */
+}
+
+/* Add contrast to form labels */
+.form-label {
+    color: var(--ice-blue) !important;
+    font-weight: 500;
+}
