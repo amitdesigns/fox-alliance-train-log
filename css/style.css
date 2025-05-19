@@ -41,6 +41,9 @@ h1 {
 .table {
     color: var(--snow-white) !important; /* Force white text */
 }
+.td {
+    color: var(--snow-white) !important;
+}
 
 .table th, .table td {
     border-color: var(--ice-blue) !important; /* Ice-colored borders */
