@@ -3,11 +3,13 @@ const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
+// Main App Variables
 let currentUser = null;
 let editingId = null;
 
-// DOM Elements
+// DOM Elements - Main App
 const loginBtn = document.getElementById('login-btn');
+const addNewBtn = document.getElementById('add-new-btn'); // Critical for Add New button
 const logTable = document.getElementById('log-table');
 const editForm = document.getElementById('edit-form');
 const entryForm = document.getElementById('entry-form');
@@ -15,19 +17,24 @@ const loginModal = new bootstrap.Modal(document.getElementById('login-modal'));
 const loginForm = document.getElementById('login-form');
 const formTitle = document.getElementById('form-title');
 
-// Event Listeners
-loginBtn.addEventListener('click', toggleLogin);
-loginForm.addEventListener('submit', handleLogin);
-entryForm.addEventListener('submit', saveEntry);
-document.getElementById('cancel-edit').addEventListener('click', cancelEdit);
+// DOM Elements - Lucky Dip
+const generateBtn = document.getElementById('generate-lucky-dip');
+const luckyDipResult = document.getElementById('lucky-dip-result');
+const selectedNameDisplay = document.getElementById('selected-name');
+
+// ======================
+// Main App Functionality
+// ======================
 
 // Auth State Listener
 auth.onAuthStateChanged(user => {
     currentUser = user;
     updateUI();
     loadLogs();
+    console.log("Auth state changed. User:", user ? user.email : "None");
 });
 
+// Toggle Login/Logout
 function toggleLogin() {
     if (currentUser) {
         auth.signOut();
@@ -36,6 +43,7 @@ function toggleLogin() {
     }
 }
 
+// Handle Login Form
 function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -49,20 +57,27 @@ function handleLogin(e) {
         .catch(error => alert('Login error: ' + error.message));
 }
 
+// Update UI Elements
 function updateUI() {
     if (currentUser) {
         loginBtn.textContent = 'Admin Logout';
         loginBtn.className = 'btn btn-sm btn-outline-danger';
+        addNewBtn.style.display = 'inline-block'; // THIS SHOWS THE BUTTON
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'inline-block');
     } else {
         loginBtn.textContent = 'Admin Login';
         loginBtn.className = 'btn btn-sm btn-outline-primary';
+        addNewBtn.style.display = 'none'; // THIS HIDES THE BUTTON
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'none');
+        cancelEdit();
     }
 }
 
+// Load Logs from Firestore
 function loadLogs() {
     db.collection('logs').orderBy('date', 'desc').onSnapshot(snapshot => {
         let html = `
-            <table class="table table-striped">
+            <table class="table table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -100,6 +115,18 @@ function loadLogs() {
     });
 }
 
+// Add New Entry Functionality
+addNewBtn.addEventListener('click', addNewEntry);
+
+function addNewEntry() {
+    editingId = null;
+    formTitle.textContent = 'Add New Entry';
+    entryForm.reset();
+    document.getElementById('log-date').valueAsDate = new Date(); // Set today's date
+    editForm.style.display = 'block';
+}
+
+// Edit Existing Entry
 function editEntry(id) {
     editingId = id;
     formTitle.textContent = 'Edit Entry';
@@ -114,11 +141,13 @@ function editEntry(id) {
     });
 }
 
+// Cancel Editing
 function cancelEdit() {
     editingId = null;
     editForm.style.display = 'none';
 }
 
+// Save Entry (New or Edited)
 function saveEntry(e) {
     e.preventDefault();
     
@@ -147,6 +176,17 @@ function saveEntry(e) {
     });
 }
 
+// ======================
+// Lucky Dip Functionality
+// ======================
+
+generateBtn.addEventListener('click', generateLuckyDip);
+
+function generateLuckyDip() {
+    // ... (keep your existing Lucky Dip code) ...
+}
+
+// Helper Functions
 function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
