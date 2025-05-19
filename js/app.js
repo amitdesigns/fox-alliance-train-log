@@ -166,3 +166,108 @@ function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
+
+// DOM Elements
+const namePoolTextarea = document.getElementById('name-pool');
+const generateBtn = document.getElementById('generate-lucky-dip');
+const saveNamesBtn = document.getElementById('save-names');
+const luckyDipResult = document.getElementById('lucky-dip-result');
+const selectedNameDisplay = document.getElementById('selected-name');
+
+// State
+let usedNames = [];
+
+// Load names on startup
+auth.onAuthStateChanged(user => {
+    if (user) loadNameList();
+});
+
+// Load names from Firebase
+function loadNameList() {
+    db.collection("nameLists").doc(currentUser.uid).get()
+        .then(doc => {
+            if (doc.exists) {
+                namePoolTextarea.value = doc.data().names.join("\n");
+                console.log("Loaded saved names");
+            }
+        });
+}
+
+// Save names to Firebase
+saveNamesBtn.addEventListener('click', () => {
+    if (!currentUser) {
+        alert("Please log in to save names");
+        return;
+    }
+
+    const names = cleanNameInput(namePoolTextarea.value);
+    
+    db.collection("nameLists").doc(currentUser.uid).set({
+        names: names,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        alert("✅ Name list saved!");
+    });
+});
+
+// Generate random pick
+generateBtn.addEventListener('click', generateLuckyDip);
+
+function generateLuckyDip() {
+    const allNames = cleanNameInput(namePoolTextarea.value);
+    
+    if (allNames.length === 0) {
+        alert("Please add names first!");
+        return;
+    }
+
+    // Get names currently in the log
+    const loggedNames = getNamesFromLogTable();
+
+    // Filter out logged names
+    let availableNames = allNames.filter(name => 
+        !loggedNames.includes(name)
+    );
+
+    // If everyone is logged, reset
+    if (availableNames.length === 0) {
+        availableNames = [...allNames];
+        usedNames = [];
+        alert("⚠️ All members have been logged! Resetting pool.");
+    }
+
+    // Filter out recently used
+    availableNames = availableNames.filter(name => 
+        !usedNames.includes(name)
+    );
+
+    // If all available names have been used, reset
+    if (availableNames.length === 0) {
+        usedNames = [];
+        availableNames = allNames.filter(name => 
+            !loggedNames.includes(name)
+        );
+    }
+
+    // Random selection
+    const winner = availableNames[Math.floor(Math.random() * availableNames.length)];
+    usedNames.push(winner);
+    
+    // Display
+    selectedNameDisplay.textContent = winner;
+    luckyDipResult.classList.remove('d-none');
+}
+
+// Helper functions
+function cleanNameInput(input) {
+    return input.split(/[\n,]/)
+        .map(name => name.trim())
+        .filter(name => name.length > 0);
+}
+
+function getNamesFromLogTable() {
+    const loggedNames = [];
+    document.querySelectorAll('#log-table td:nth-child(2), #log-table td:nth-child(3), #log-table td:nth-child(4)')
+        .forEach(td => loggedNames.push(td.textContent.trim()));
+    return loggedNames;
+}
