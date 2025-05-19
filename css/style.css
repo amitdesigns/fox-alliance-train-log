@@ -44,6 +44,8 @@ h1 {
 
 .table th, .table td {
     border-color: var(--ice-blue) !important; /* Ice-colored borders */
+    color: white !important;
+    
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
