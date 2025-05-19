@@ -1,273 +1,193 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Fox Alliance Train Log</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --ice-blue: #a8d8ea;
-            --frozen-purple: #7c6ee8;
-            --snow-white: #f0f8ff;
-            --dark-ice: #3a4a7b;
-            --crystal-teal: #00c1b3;
-        }
-        
-        body {
-            background: linear-gradient(135deg, var(--dark-ice), #1a2a4a);
-            color: var(--snow-white);
-            min-height: 100vh;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        h1 {
-            color: var(--ice-blue);
-            text-align: center;
-            margin: 20px 0;
-            text-shadow: 0 0 10px rgba(168, 216, 234, 0.5);
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        
-        #admin-controls {
-            margin-bottom: 30px;
-            padding: 15px;
-            background: rgba(58, 74, 123, 0.7);
-            border-radius: 10px;
-            border: 1px solid var(--ice-blue);
-            box-shadow: 0 0 15px rgba(168, 216, 234, 0.3);
-        }
-        
-        #log-table {
-            background: rgba(31, 41, 71, 0.8);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-        
-        #edit-form {
-            background: rgba(31, 41, 71, 0.9);
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 30px;
-            display: none;
-            border: 1px solid var(--crystal-teal);
-            box-shadow: 0 0 20px rgba(0, 193, 179, 0.3);
-        }
-        
-        .table {
-            color: var(--snow-white);
-            margin-bottom: 0;
-        }
-        
-        .table thead th {
-            background-color: var(--frozen-purple);
-            border-bottom: 2px solid var(--ice-blue);
-        }
-        
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(168, 216, 234, 0.1);
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: rgba(124, 110, 232, 0.2);
-        }
-        
-        .btn-outline-primary {
-            color: var(--ice-blue);
-            border-color: var(--ice-blue);
-        }
-        
-        .btn-outline-primary:hover {
-            background-color: var(--ice-blue);
-            color: var(--dark-ice);
-        }
-        
-        .btn-outline-danger {
-            color: #ff6b6b;
-            border-color: #ff6b6b;
-        }
-        
-        .btn-outline-danger:hover {
-            background-color: #ff6b6b;
-            color: white;
-        }
-        
-        .btn-success {
-            background-color: var(--crystal-teal);
-            border-color: var(--crystal-teal);
-        }
-        
-        .btn-success:hover {
-            background-color: #00a396;
-            border-color: #00a396;
-        }
-        
-        .btn-warning {
-            background-color: #ffc107;
-            border-color: #ffc107;
-            color: var(--dark-ice);
-        }
-        
-        .modal-content {
-            background: linear-gradient(to bottom, var(--dark-ice), #2a3a6a);
-            color: var(--snow-white);
-            border: 1px solid var(--ice-blue);
-        }
-        
-        .form-control {
-            background-color: rgba(31, 41, 71, 0.7);
-            border: 1px solid var(--ice-blue);
-            color: var(--snow-white);
-        }
-        
-        .form-control:focus {
-            background-color: rgba(31, 41, 71, 0.9);
-            border-color: var(--crystal-teal);
-            color: var(--snow-white);
-            box-shadow: 0 0 0 0.25rem rgba(0, 193, 179, 0.25);
-        }
-        
-        #form-title {
-            color: var(--ice-blue);
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--crystal-teal);
-            padding-bottom: 10px;
-        }
-        
-        .table-striped>tbody>tr:nth-of-type(odd)>* {
-    --bs-table-accent-bg: var(--bs-table-striped-bg);
-    color: var(--snow-white);
-        }
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-        .frozen-card {
-    background: rgba(58, 74, 123, 0.7);
-    border-radius: 10px;
-    padding: 20px;
-    border: 1px solid var(--ice-blue);
-    box-shadow: 0 0 15px rgba(168, 216, 234, 0.2);
+// Main App Variables
+let currentUser = null;
+let editingId = null;
+
+// DOM Elements - Main App
+const loginBtn = document.getElementById('login-btn');
+const addNewBtn = document.getElementById('add-new-btn'); // Critical for Add New button
+const logTable = document.getElementById('log-table');
+const editForm = document.getElementById('edit-form');
+const entryForm = document.getElementById('entry-form');
+const loginModal = new bootstrap.Modal(document.getElementById('login-modal'));
+const loginForm = document.getElementById('login-form');
+const formTitle = document.getElementById('form-title');
+
+// DOM Elements - Lucky Dip
+const generateBtn = document.getElementById('generate-lucky-dip');
+const luckyDipResult = document.getElementById('lucky-dip-result');
+const selectedNameDisplay = document.getElementById('selected-name');
+
+// ======================
+// Main App Functionality
+// ======================
+
+// Auth State Listener
+auth.onAuthStateChanged(user => {
+    currentUser = user;
+    updateUI();
+    loadLogs();
+    console.log("Auth state changed. User:", user ? user.email : "None");
+});
+
+// Toggle Login/Logout
+function toggleLogin() {
+    if (currentUser) {
+        auth.signOut();
+    } else {
+        loginModal.show();
+    }
 }
 
-.ice-crystal-bg {
-    background: rgba(0, 193, 179, 0.15);
-    border: 1px solid var(--crystal-teal);
-    border-radius: 8px;
+// Handle Login Form
+function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+            loginModal.hide();
+            loginForm.reset();
+        })
+        .catch(error => alert('Login error: ' + error.message));
 }
 
-.glowing-text {
-    text-shadow: 0 0 8px rgba(168, 216, 234, 0.7);
+// Update UI Elements
+function updateUI() {
+    if (currentUser) {
+        loginBtn.textContent = 'Admin Logout';
+        loginBtn.className = 'btn btn-sm btn-outline-danger';
+        addNewBtn.style.display = 'inline-block'; // THIS SHOWS THE BUTTON
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'inline-block');
+    } else {
+        loginBtn.textContent = 'Admin Login';
+        loginBtn.className = 'btn btn-sm btn-outline-primary';
+        addNewBtn.style.display = 'none'; // THIS HIDES THE BUTTON
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'none');
+        cancelEdit();
+    }
 }
 
-.btn-frozen {
-    background-color: var(--frozen-purple);
-    color: white;
-    transition: all 0.3s;
-}
-
-.btn-frozen:hover {
-    background-color: #6a5acd;
-    transform: translateY(-2px);
-}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>❄️ Fox Alliance Train Log ❄️</h1>
+// Load Logs from Firestore
+function loadLogs() {
+    db.collection('logs').orderBy('date', 'desc').onSnapshot(snapshot => {
+        let html = `
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Person 1</th>
+                        <th>Person 2</th>
+                        <th>Person 3</th>
+                        ${currentUser ? '<th>Actions</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody>`;
         
-        <div id="admin-controls">
-            <button id="login-btn" class="btn btn-outline-primary">Admin Login</button>
-            <button id="add-new-btn" class="btn btn-success ms-2" style="display: none;">
-                ✨ Add New Entry
-            </button>
-        </div>
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            html += `
+                <tr>
+                    <td>${formatDate(data.date)}</td>
+                    <td>${data.person1}</td>
+                    <td>${data.person2}</td>
+                    <td>${data.person3}</td>
+                    ${currentUser ? `
+                    <td>
+                        <button class="btn btn-sm btn-warning edit-btn" data-id="${doc.id}">
+                            Edit
+                        </button>
+                    </td>` : ''}
+                </tr>`;
+        });
         
-        <div id="log-table" class="table-responsive"></div>
+        html += `</tbody></table>`;
+        logTable.innerHTML = html;
         
-        <div id="edit-form">
-            <h3 id="form-title">Add New Entry</h3>
-            <form id="entry-form">
-                <div class="mb-3">
-                    <label class="form-label">📅 Date</label>
-                    <input type="date" id="log-date" class="form-control" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Person 1</label>
-                        <input type="text" id="person1" class="form-control" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Person 2</label>
-                        <input type="text" id="person2" class="form-control" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Person 3</label>
-                        <input type="text" id="person3" class="form-control" required>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary me-2">💾 Save</button>
-                    <button type="button" id="cancel-edit" class="btn btn-outline-secondary">❌ Cancel</button>
-                </div>
-            </form>
-        </div>
-         <div class="mt-5 frozen-card">
-    <h3 class="glowing-text">🎲 Lucky Dip Generator</h3>
-    <div class="card bg-dark-ice">
-        <div class="card-body">
-            <div class="mb-3">
-              <!--  <label class="form-label">Alliance Members List</label>
-                <textarea id="name-pool" class="form-control mb-2" rows="5" 
-                    placeholder="Enter one name per line or separated by commas"></textarea>
-                <div class="d-flex gap-2">
-                   <!-- <button id="save-names" class="btn btn-frozen"> 
-                        💾 Save List 
-                    </button> -->
-                    <button id="generate-lucky-dip" class="btn btn-frozen">
-                        ✨ Generate Pick
-                    </button>
-                </div>
-            </div>
-            <div id="lucky-dip-result" class="mt-3 p-3 ice-crystal-bg d-none">
-                <h4>Selected Member:</h4>
-                <p id="selected-name" class="display-4 text-center glowing-text"></p>
-            </div>
-        </div>
-    </div>
-</div>
-    </div>
-   
-    <!-- Login Modal -->
-    <div class="modal fade" id="login-modal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">🔑 Admin Login</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="login-form">
-                        <div class="mb-3">
-                            <label class="form-label">📧 Email</label>
-                            <input type="email" id="login-email" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">🔒 Password</label>
-                            <input type="password" id="login-password" class="form-control" required>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">Login</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => editEntry(btn.dataset.id));
+        });
+    });
+}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/app.js"></script>
-</body>
-</html>
+// Add New Entry Functionality
+addNewBtn.addEventListener('click', addNewEntry);
+
+function addNewEntry() {
+    editingId = null;
+    formTitle.textContent = 'Add New Entry';
+    entryForm.reset();
+    document.getElementById('log-date').valueAsDate = new Date(); // Set today's date
+    editForm.style.display = 'block';
+}
+
+// Edit Existing Entry
+function editEntry(id) {
+    editingId = id;
+    formTitle.textContent = 'Edit Entry';
+    
+    db.collection('logs').doc(id).get().then(doc => {
+        const data = doc.data();
+        document.getElementById('log-date').value = data.date;
+        document.getElementById('person1').value = data.person1;
+        document.getElementById('person2').value = data.person2;
+        document.getElementById('person3').value = data.person3;
+        editForm.style.display = 'block';
+    });
+}
+
+// Cancel Editing
+function cancelEdit() {
+    editingId = null;
+    editForm.style.display = 'none';
+}
+
+// Save Entry (New or Edited)
+function saveEntry(e) {
+    e.preventDefault();
+    
+    if (!currentUser) {
+        alert("Please log in to make changes");
+        return;
+    }
+
+    const entry = {
+        date: document.getElementById('log-date').value,
+        person1: document.getElementById('person1').value,
+        person2: document.getElementById('person2').value,
+        person3: document.getElementById('person3').value,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    const operation = editingId 
+        ? db.collection('logs').doc(editingId).update(entry)
+        : db.collection('logs').add(entry);
+
+    operation.then(() => {
+        cancelEdit();
+    }).catch(error => {
+        console.error("Error writing document:", error);
+        alert("Error saving entry: " + error.message);
+    });
+}
+
+// ======================
+// Lucky Dip Functionality
+// ======================
+
+generateBtn.addEventListener('click', generateLuckyDip);
+
+function generateLuckyDip() {
+    // ... (keep your existing Lucky Dip code) ...
+}
+
+// Helper Functions
+function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+}
