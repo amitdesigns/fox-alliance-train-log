@@ -176,15 +176,6 @@ function saveEntry(e) {
     });
 }
 
-// ======================
-// Lucky Dip Functionality
-// ======================
-
-generateBtn.addEventListener('click', generateLuckyDip);
-
-function generateLuckyDip() {
-    // ... (keep your existing Lucky Dip code) ...
-}
 
 // Helper Functions
 function formatDate(dateString) {
