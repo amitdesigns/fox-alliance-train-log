@@ -3,12 +3,13 @@ const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
+// Main App Variables
 let currentUser = null;
 let editingId = null;
+const MANUAL_DOC_ID = "YOUR_MANUAL_DOC_ID_HERE"; // Replace with your Firebase document ID
 
-// DOM Elements
+// DOM Elements - Main App
 const loginBtn = document.getElementById('login-btn');
-const addNewBtn = document.getElementById('add-new-btn');
 const logTable = document.getElementById('log-table');
 const editForm = document.getElementById('edit-form');
 const entryForm = document.getElementById('entry-form');
@@ -16,18 +17,26 @@ const loginModal = new bootstrap.Modal(document.getElementById('login-modal'));
 const loginForm = document.getElementById('login-form');
 const formTitle = document.getElementById('form-title');
 
-// Event Listeners
-loginBtn.addEventListener('click', toggleLogin);
-loginForm.addEventListener('submit', handleLogin);
-entryForm.addEventListener('submit', saveEntry);
-document.getElementById('cancel-edit').addEventListener('click', cancelEdit);
-addNewBtn.addEventListener('click', addNewEntry);
+// DOM Elements - Lucky Dip
+const namePoolTextarea = document.getElementById('name-pool');
+const generateBtn = document.getElementById('generate-lucky-dip');
+const saveNamesBtn = document.getElementById('save-names');
+const luckyDipResult = document.getElementById('lucky-dip-result');
+const selectedNameDisplay = document.getElementById('selected-name');
+
+// State
+let usedNames = [];
+
+// ======================
+// Main App Functionality
+// ======================
 
 // Auth State Listener
 auth.onAuthStateChanged(user => {
     currentUser = user;
     updateUI();
     loadLogs();
+    if (user) loadNameList(); // Load names when logged in
     console.log("Auth state changed. User:", user ? user.email : "None");
 });
 
@@ -56,19 +65,19 @@ function updateUI() {
     if (currentUser) {
         loginBtn.textContent = 'Admin Logout';
         loginBtn.className = 'btn btn-sm btn-outline-danger';
-        addNewBtn.style.display = 'inline-block';
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'inline-block');
     } else {
         loginBtn.textContent = 'Admin Login';
         loginBtn.className = 'btn btn-sm btn-outline-primary';
-        addNewBtn.style.display = 'none';
-        editForm.style.display = 'none';
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'none');
+        cancelEdit();
     }
 }
 
 function loadLogs() {
     db.collection('logs').orderBy('date', 'desc').onSnapshot(snapshot => {
         let html = `
-            <table class="table table-striped table-hover"> <!-- Added table-hover -->
+            <table class="table table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -100,19 +109,10 @@ function loadLogs() {
         html += `</tbody></table>`;
         logTable.innerHTML = html;
         
-        // Add event listeners to edit buttons
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', () => editEntry(btn.dataset.id));
         });
     });
-}
-
-function addNewEntry() {
-    editingId = null;
-    formTitle.textContent = 'Add New Entry';
-    entryForm.reset();
-    document.getElementById('log-date').valueAsDate = new Date();
-    editForm.style.display = 'block';
 }
 
 function editEntry(id) {
@@ -162,38 +162,21 @@ function saveEntry(e) {
     });
 }
 
-function formatDate(dateString) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-}
+// ======================
+// Lucky Dip Functionality
+// ======================
 
-// DOM Elements
-const namePoolTextarea = document.getElementById('name-pool');
-const generateBtn = document.getElementById('generate-lucky-dip');
-const saveNamesBtn = document.getElementById('save-names');
-const luckyDipResult = document.getElementById('lucky-dip-result');
-const selectedNameDisplay = document.getElementById('selected-name');
-
-// State
-let usedNames = [];
-
-// Load names on startup
-auth.onAuthStateChanged(user => {
-    if (user) loadNameList();
-});
-
-// Load names from Firebase
 function loadNameList() {
-    db.collection("nameLists").doc(currentUser.uid).get()
+    db.collection("nameLists").doc(MANUAL_DOC_ID).get()
         .then(doc => {
             if (doc.exists) {
                 namePoolTextarea.value = doc.data().names.join("\n");
-                console.log("Loaded saved names");
+                console.log("Loaded names from Firebase");
             }
-        });
+        })
+        .catch(error => console.error("Error loading names:", error));
 }
 
-// Save names to Firebase
 saveNamesBtn.addEventListener('click', () => {
     if (!currentUser) {
         alert("Please log in to save names");
@@ -202,15 +185,15 @@ saveNamesBtn.addEventListener('click', () => {
 
     const names = cleanNameInput(namePoolTextarea.value);
     
-    db.collection("nameLists").doc(currentUser.uid).set({
+    db.collection("nameLists").doc(MANUAL_DOC_ID).set({
         names: names,
+        owner: currentUser.uid,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-        alert("✅ Name list saved!");
+        alert("✅ Name list saved to Firebase!");
     });
 });
 
-// Generate random pick
 generateBtn.addEventListener('click', generateLuckyDip);
 
 function generateLuckyDip() {
@@ -221,44 +204,30 @@ function generateLuckyDip() {
         return;
     }
 
-    // Get names currently in the log
     const loggedNames = getNamesFromLogTable();
+    let availableNames = allNames.filter(name => !loggedNames.includes(name));
 
-    // Filter out logged names
-    let availableNames = allNames.filter(name => 
-        !loggedNames.includes(name)
-    );
-
-    // If everyone is logged, reset
     if (availableNames.length === 0) {
         availableNames = [...allNames];
         usedNames = [];
         alert("⚠️ All members have been logged! Resetting pool.");
     }
 
-    // Filter out recently used
-    availableNames = availableNames.filter(name => 
-        !usedNames.includes(name)
-    );
+    availableNames = availableNames.filter(name => !usedNames.includes(name));
 
-    // If all available names have been used, reset
     if (availableNames.length === 0) {
         usedNames = [];
-        availableNames = allNames.filter(name => 
-            !loggedNames.includes(name)
-        );
+        availableNames = allNames.filter(name => !loggedNames.includes(name));
     }
 
-    // Random selection
     const winner = availableNames[Math.floor(Math.random() * availableNames.length)];
     usedNames.push(winner);
     
-    // Display
     selectedNameDisplay.textContent = winner;
     luckyDipResult.classList.remove('d-none');
 }
 
-// Helper functions
+// Helper Functions
 function cleanNameInput(input) {
     return input.split(/[\n,]/)
         .map(name => name.trim())
@@ -270,4 +239,9 @@ function getNamesFromLogTable() {
     document.querySelectorAll('#log-table td:nth-child(2), #log-table td:nth-child(3), #log-table td:nth-child(4)')
         .forEach(td => loggedNames.push(td.textContent.trim()));
     return loggedNames;
+}
+
+function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
 }
