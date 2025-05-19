@@ -14,25 +14,18 @@ const entryForm = document.getElementById('entry-form');
 const loginModal = new bootstrap.Modal(document.getElementById('login-modal'));
 const loginForm = document.getElementById('login-form');
 const formTitle = document.getElementById('form-title');
+const addNewBtn = document.getElementById('add-new-btn');
 
 // Event Listeners
 loginBtn.addEventListener('click', toggleLogin);
 loginForm.addEventListener('submit', handleLogin);
 entryForm.addEventListener('submit', saveEntry);
 document.getElementById('cancel-edit').addEventListener('click', cancelEdit);
-
-// Auth State Listener
-auth.onAuthStateChanged(user => {
-    currentUser = user;
-    updateUI();
-    loadLogs();
-});
+addNewBtn.addEventListener('click', addNewEntry);
 
 function toggleLogin() {
     if (currentUser) {
-        auth.signOut()
-            .then(() => console.log("User logged out"))
-            .catch(error => console.error("Logout error:", error));
+        auth.signOut();
     } else {
         loginModal.show();
     }
@@ -56,11 +49,13 @@ function updateUI() {
         loginBtn.textContent = 'Admin Logout';
         loginBtn.className = 'btn btn-sm btn-outline-danger';
         document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'inline-block');
+        addNewBtn.style.display = 'block';
     } else {
         loginBtn.textContent = 'Admin Login';
         loginBtn.className = 'btn btn-sm btn-outline-primary';
         document.querySelectorAll('.edit-btn').forEach(btn => btn.style.display = 'none');
-        cancelEdit(); // Reset form when logging out
+        addNewBtn.style.display = 'none';
+        cancelEdit();
     }
 }
 
@@ -92,9 +87,6 @@ function loadLogs() {
                         <button class="btn btn-sm btn-warning edit-btn" data-id="${doc.id}">
                             Edit
                         </button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id="${doc.id}" style="margin-left: 5px;">
-                            Delete
-                        </button>
                     </td>` : ''}
                 </tr>`;
         });
@@ -102,16 +94,19 @@ function loadLogs() {
         html += `</tbody></table>`;
         logTable.innerHTML = html;
         
-        // Add edit event listeners
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', () => editEntry(btn.dataset.id));
         });
-        
-        // Add delete event listeners
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => deleteEntry(btn.dataset.id));
-        });
     });
+}
+
+function addNewEntry() {
+    editingId = null;
+    formTitle.textContent = 'Add New Entry';
+    entryForm.reset();
+    document.getElementById('log-date').valueAsDate = new Date(); // Set today's date
+    editForm.classList.remove('d-none');
+    window.scrollTo(0, document.body.scrollHeight);
 }
 
 function editEntry(id) {
@@ -126,27 +121,11 @@ function editEntry(id) {
         document.getElementById('person3').value = data.person3;
         editForm.classList.remove('d-none');
         window.scrollTo(0, document.body.scrollHeight);
-    }).catch(error => {
-        console.error("Error loading document:", error);
-        alert("Error loading entry: " + error.message);
     });
-}
-
-function deleteEntry(id) {
-    if (confirm('Are you sure you want to delete this entry?')) {
-        db.collection('logs').doc(id).delete()
-            .then(() => console.log("Entry deleted"))
-            .catch(error => {
-                console.error("Error deleting document:", error);
-                alert("Error deleting entry: " + error.message);
-            });
-    }
 }
 
 function cancelEdit() {
     editingId = null;
-    formTitle.textContent = 'Add New Entry';
-    entryForm.reset();
     editForm.classList.add('d-none');
 }
 
@@ -166,6 +145,7 @@ function saveEntry(e) {
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
     
+    // Determine if we're adding new or editing existing
     const operation = editingId 
         ? db.collection('logs').doc(editingId).update(entry)
         : db.collection('logs').add(entry);
