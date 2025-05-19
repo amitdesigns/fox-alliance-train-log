@@ -41,8 +41,9 @@ h1 {
 .table {
     color: var(--snow-white) !important; /* Force white text */
 }
-.td {
-    color: var(--snow-white) !important;
+.table-striped>tbody>tr:nth-of-type(odd)>* {
+    --bs-table-accent-bg: var(--bs-table-striped-bg);
+    color: var(--snow-white) !important; /* Force white text */
 }
 
 .table th, .table td {
