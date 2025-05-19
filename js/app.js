@@ -6,7 +6,7 @@ const auth = firebase.auth();
 // Main App Variables
 let currentUser = null;
 let editingId = null;
-const MANUAL_DOC_ID = "YOUR_MANUAL_DOC_ID_HERE"; // Replace with your Firebase document ID
+const MANUAL_DOC_ID = "NameLog"; // Replace with your Firebase document ID
 
 // DOM Elements - Main App
 const loginBtn = document.getElementById('login-btn');
