@@ -68,7 +68,7 @@ function updateUI() {
 function loadLogs() {
     db.collection('logs').orderBy('date', 'desc').onSnapshot(snapshot => {
         let html = `
-            <table class="table table-striped">
+            <table class="table table-striped table-hover"> <!-- Added table-hover -->
                 <thead>
                     <tr>
                         <th>Date</th>
