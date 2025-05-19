@@ -24,3 +24,17 @@ h1 {
 .edit-btn {
     display: none;
 }
+
+#edit-form {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+#admin-controls {
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.card {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
