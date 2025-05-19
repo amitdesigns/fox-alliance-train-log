@@ -56,6 +56,10 @@ h1 {
     background-color: rgba(31, 41, 71, 0.8) !important; /* Dark ice background */
 }
 
+.table-striped>tbody>tr:nth-of-type(odd)>* {
+    --bs-table-accent-bg: rgb(255 254 254 / 5%);
+    /* color: #a3193e;
+
 .table-hover tbody tr:hover {
     background-color: rgba(124, 110, 232, 0.3) !important; /* Brighter purple hover */
 }
