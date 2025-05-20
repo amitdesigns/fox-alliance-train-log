@@ -74,8 +74,8 @@ function loadLogs() {
                     <tr>
                         <th>Date</th>
                         <th>Convoy Leader</th>
-                        <th>Person 2</th>
-                        <th>Person 3</th>
+                        <th>Deputy Convoy Leader 1</th>
+                        <th>Deputy Convoy Leader 2</th>
                         ${currentUser ? '<th>Actions</th>' : ''}
                     </tr>
                 </thead>
