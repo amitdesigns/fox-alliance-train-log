@@ -1,4 +1,4 @@
-// Initialize Firebase
+
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
@@ -6,7 +6,7 @@ const auth = firebase.auth();
 let currentUser = null;
 let editingId = null;
 
-// DOM Elements
+
 const loginBtn = document.getElementById('login-btn');
 const addNewBtn = document.getElementById('add-new-btn');
 const logTable = document.getElementById('log-table');
@@ -16,14 +16,14 @@ const loginModal = new bootstrap.Modal(document.getElementById('login-modal'));
 const loginForm = document.getElementById('login-form');
 const formTitle = document.getElementById('form-title');
 
-// Event Listeners
+
 loginBtn.addEventListener('click', toggleLogin);
 loginForm.addEventListener('submit', handleLogin);
 entryForm.addEventListener('submit', saveEntry);
 document.getElementById('cancel-edit').addEventListener('click', cancelEdit);
 addNewBtn.addEventListener('click', addNewEntry);
 
-// Auth State Listener
+
 auth.onAuthStateChanged(user => {
     currentUser = user;
     updateUI();
@@ -167,7 +167,7 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
 
-// Add this after your existing code
+
 let participationChart = null;
 
 function updateChart() {
@@ -179,18 +179,18 @@ function updateChart() {
             nameCounts[name] = (nameCounts[name] || 0) + 1;
         });
 
-    // Prepare chart data
+   
     const names = Object.keys(nameCounts);
     const counts = Object.values(nameCounts);
     
-    // Sort by participation count (descending)
+  
     const sortedIndices = [...Array(names.length).keys()]
         .sort((a, b) => counts[b] - counts[a]);
     
     const sortedNames = sortedIndices.map(i => names[i]);
     const sortedCounts = sortedIndices.map(i => counts[i]);
 
-    // Get or create chart
+
     const ctx = document.getElementById('participationChart').getContext('2d');
     
     if (participationChart) {
@@ -248,12 +248,12 @@ function updateChart() {
     }
 }
 
-// Update your loadLogs function to call updateChart
+
 function loadLogs() {
     db.collection('logs').orderBy('date', 'desc').onSnapshot(snapshot => {
         // ... existing table code ...
         
-        // Add this at the end:
+        
         updateChart();
     });
 }
