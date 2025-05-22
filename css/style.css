@@ -69,18 +69,18 @@ h1 {
     background-color: rgba(124, 110, 232, 0.3) !important; /* Brighter purple hover */
 }
 
-/* Make sure buttons stand out */
+
 .btn-warning {
     color: #3a4a7b !important; /* Dark text on yellow buttons */
 }
 
-/* Add contrast to form labels */
+
 .form-label {
     color: var(--ice-blue) !important;
     font-weight: 500;
 }
 
-/* Add to your existing CSS */
+
 #participationChart {
     max-height: 400px;
     width: 100% !important;
