@@ -8,7 +8,7 @@
         :root {
             --ice-blue: #a8d8ea;
             --frozen-purple: #7c6ee8;
-            --snow-white: #f0f8ff;
+            --snow-white: #ffffff; /* Changed to pure white for better visibility */
             --dark-ice: #3a4a7b;
             --crystal-teal: #00c1b3;
         }
@@ -57,39 +57,43 @@
             box-shadow: 0 0 20px rgba(0, 193, 179, 0.3);
         }
         
+        /* Table Styling Fixes */
         .table {
             color: var(--snow-white) !important;
             margin-bottom: 0;
+            background-color: transparent !important;
+        }
+        
+        .table th, .table td {
+            border-color: rgba(168, 216, 234, 0.3) !important;
+            padding: 12px !important;
         }
         
         .table thead th {
-            background-color: var(--frozen-purple);
-            border-bottom: 2px solid var(--ice-blue);
+            background-color: var(--frozen-purple) !important;
+            border-bottom: 2px solid var(--ice-blue) !important;
+            color: white !important;
         }
         
         .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(168, 216, 234, 0.1);
+            background-color: rgba(168, 216, 234, 0.1) !important;
         }
         
-        .modal-content {
-            background: linear-gradient(to bottom, var(--dark-ice), #2a3a6a);
-            color: var(--snow-white);
-            border: 1px solid var(--ice-blue);
+        .table-hover tbody tr:hover {
+            background-color: rgba(124, 110, 232, 0.2) !important;
         }
         
-        .form-control {
-            background-color: rgba(31, 41, 71, 0.7);
-            border: 1px solid var(--ice-blue);
-            color: var(--snow-white);
+        /* Chart Styling */
+        #participationChart {
+            max-height: 400px;
+            width: 100% !important;
+            height: 400px !important;
+            background: rgba(31, 41, 71, 0.7);
+            border-radius: 8px;
+            padding: 15px;
         }
         
-        #form-title {
-            color: var(--ice-blue);
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--crystal-teal);
-            padding-bottom: 10px;
-        }
-        
+        /* Other Elements */
         .frozen-card {
             background: rgba(58, 74, 123, 0.7);
             border-radius: 10px;
@@ -99,17 +103,6 @@
             margin-bottom: 20px;
         }
         
-        .glowing-text {
-            text-shadow: 0 0 8px rgba(168, 216, 234, 0.7);
-            margin-bottom: 15px;
-        }
-        
-        #participationChart {
-            max-height: 400px;
-            width: 100% !important;
-            height: 100% !important;
-        }
-        
         .btn-outline-primary {
             color: var(--ice-blue);
             border-color: var(--ice-blue);
@@ -117,32 +110,6 @@
         
         .btn-outline-primary:hover {
             background-color: var(--ice-blue);
-            color: var(--dark-ice);
-        }
-        
-        .btn-outline-danger {
-            color: #ff6b6b;
-            border-color: #ff6b6b;
-        }
-        
-        .btn-outline-danger:hover {
-            background-color: #ff6b6b;
-            color: white;
-        }
-        
-        .btn-success {
-            background-color: var(--crystal-teal);
-            border-color: var(--crystal-teal);
-        }
-        
-        .btn-success:hover {
-            background-color: #00a396;
-            border-color: #00a396;
-        }
-        
-        .btn-warning {
-            background-color: #ffc107;
-            border-color: #ffc107;
             color: var(--dark-ice);
         }
     </style>
@@ -188,14 +155,10 @@
             </form>
         </div>
         
-        <!-- Participation Chart Section -->
+        <!-- Participation Chart -->
         <div class="frozen-card">
-            <h3 class="glowing-text">📊 Participation Chart</h3>
-            <div class="card bg-dark-ice">
-                <div class="card-body">
-                    <canvas id="participationChart"></canvas>
-                </div>
-            </div>
+            <h3>📊 Participation Chart</h3>
+            <canvas id="participationChart"></canvas>
         </div>
     </div>
 
