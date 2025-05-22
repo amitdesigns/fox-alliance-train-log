@@ -3,6 +3,7 @@
 <head>
     <title>Fox Alliance Train Log</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --ice-blue: #a8d8ea;
@@ -43,6 +44,7 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
         }
         
         #edit-form {
@@ -56,7 +58,7 @@
         }
         
         .table {
-            color: var(--snow-white);
+            color: var(--snow-white) !important;
             margin-bottom: 0;
         }
         
@@ -69,8 +71,43 @@
             background-color: rgba(168, 216, 234, 0.1);
         }
         
-        .table-hover tbody tr:hover {
-            background-color: rgba(124, 110, 232, 0.2);
+        .modal-content {
+            background: linear-gradient(to bottom, var(--dark-ice), #2a3a6a);
+            color: var(--snow-white);
+            border: 1px solid var(--ice-blue);
+        }
+        
+        .form-control {
+            background-color: rgba(31, 41, 71, 0.7);
+            border: 1px solid var(--ice-blue);
+            color: var(--snow-white);
+        }
+        
+        #form-title {
+            color: var(--ice-blue);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--crystal-teal);
+            padding-bottom: 10px;
+        }
+        
+        .frozen-card {
+            background: rgba(58, 74, 123, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--ice-blue);
+            box-shadow: 0 0 15px rgba(168, 216, 234, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .glowing-text {
+            text-shadow: 0 0 8px rgba(168, 216, 234, 0.7);
+            margin-bottom: 15px;
+        }
+        
+        #participationChart {
+            max-height: 400px;
+            width: 100% !important;
+            height: 100% !important;
         }
         
         .btn-outline-primary {
@@ -108,71 +145,11 @@
             border-color: #ffc107;
             color: var(--dark-ice);
         }
-        
-        .modal-content {
-            background: linear-gradient(to bottom, var(--dark-ice), #2a3a6a);
-            color: var(--snow-white);
-            border: 1px solid var(--ice-blue);
-        }
-        
-        .form-control {
-            background-color: rgba(31, 41, 71, 0.7);
-            border: 1px solid var(--ice-blue);
-            color: var(--snow-white);
-        }
-        
-        .form-control:focus {
-            background-color: rgba(31, 41, 71, 0.9);
-            border-color: var(--crystal-teal);
-            color: var(--snow-white);
-            box-shadow: 0 0 0 0.25rem rgba(0, 193, 179, 0.25);
-        }
-        
-        #form-title {
-            color: var(--ice-blue);
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--crystal-teal);
-            padding-bottom: 10px;
-        }
-        
-        .table-striped>tbody>tr:nth-of-type(odd)>* {
-    --bs-table-accent-bg: var(--bs-table-striped-bg);
-    color: var(--snow-white);
-        }
-
-        .frozen-card {
-    background: rgba(58, 74, 123, 0.7);
-    border-radius: 10px;
-    padding: 20px;
-    border: 1px solid var(--ice-blue);
-    box-shadow: 0 0 15px rgba(168, 216, 234, 0.2);
-}
-
-.ice-crystal-bg {
-    background: rgba(0, 193, 179, 0.15);
-    border: 1px solid var(--crystal-teal);
-    border-radius: 8px;
-}
-
-.glowing-text {
-    text-shadow: 0 0 8px rgba(168, 216, 234, 0.7);
-}
-
-.btn-frozen {
-    background-color: var(--frozen-purple);
-    color: white;
-    transition: all 0.3s;
-}
-
-.btn-frozen:hover {
-    background-color: #6a5acd;
-    transform: translateY(-2px);
-}
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🦊🚂⚔ Fox Alliance Train Log ⚔🚂🦊</h1>
+        <h1>❄️ Fox Alliance Train Log ❄️</h1>
         
         <div id="admin-controls">
             <button id="login-btn" class="btn btn-outline-primary">Admin Login</button>
@@ -183,18 +160,6 @@
         
         <div id="log-table" class="table-responsive"></div>
         
-    </div>
-
-
-<div class="mt-5 frozen-card">
-    <h3 class="glowing-text">📊 Participation Chart</h3>
-    <div class="card bg-dark-ice">
-        <div class="card-body">
-            <canvas id="participationChart"></canvas>
-        </div>
-    </div>
-</div>
-        
         <div id="edit-form">
             <h3 id="form-title">Add New Entry</h3>
             <form id="entry-form">
@@ -204,15 +169,15 @@
                 </div>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Convoy Leader </label>
+                        <label class="form-label">👤 Person 1</label>
                         <input type="text" id="person1" class="form-control" required>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Deputy Convoy Leader 1 </label>
+                        <label class="form-label">👤 Person 2</label>
                         <input type="text" id="person2" class="form-control" required>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Deputy Convoy Leader 2 </label>
+                        <label class="form-label">👤 Person 3</label>
                         <input type="text" id="person3" class="form-control" required>
                     </div>
                 </div>
@@ -222,10 +187,18 @@
                 </div>
             </form>
         </div>
-     
-</div>
+        
+        <!-- Participation Chart Section -->
+        <div class="frozen-card">
+            <h3 class="glowing-text">📊 Participation Chart</h3>
+            <div class="card bg-dark-ice">
+                <div class="card-body">
+                    <canvas id="participationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-   
     <!-- Login Modal -->
     <div class="modal fade" id="login-modal">
         <div class="modal-dialog">
@@ -257,9 +230,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
-    
 </body>
 </html>
