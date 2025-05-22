@@ -199,7 +199,7 @@ function updateChart() {
         participationChart.update();
     } else {
         participationChart = new Chart(ctx, {
-            type: 'bar',
+            type: 'pie',
             data: {
                 labels: sortedNames,
                 datasets: [{
