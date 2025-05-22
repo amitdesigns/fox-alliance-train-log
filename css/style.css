@@ -79,3 +79,10 @@ h1 {
     color: var(--ice-blue) !important;
     font-weight: 500;
 }
+
+/* Add to your existing CSS */
+#participationChart {
+    max-height: 400px;
+    width: 100% !important;
+    height: 100% !important;
+}
