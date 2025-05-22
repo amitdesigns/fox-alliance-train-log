@@ -166,3 +166,94 @@ function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
+
+// Add this after your existing code
+let participationChart = null;
+
+function updateChart() {
+    // Get all logged names
+    const nameCounts = {};
+    document.querySelectorAll('#log-table td:nth-child(2), #log-table td:nth-child(3), #log-table td:nth-child(4)')
+        .forEach(td => {
+            const name = td.textContent.trim();
+            nameCounts[name] = (nameCounts[name] || 0) + 1;
+        });
+
+    // Prepare chart data
+    const names = Object.keys(nameCounts);
+    const counts = Object.values(nameCounts);
+    
+    // Sort by participation count (descending)
+    const sortedIndices = [...Array(names.length).keys()]
+        .sort((a, b) => counts[b] - counts[a]);
+    
+    const sortedNames = sortedIndices.map(i => names[i]);
+    const sortedCounts = sortedIndices.map(i => counts[i]);
+
+    // Get or create chart
+    const ctx = document.getElementById('participationChart').getContext('2d');
+    
+    if (participationChart) {
+        participationChart.data.labels = sortedNames;
+        participationChart.data.datasets[0].data = sortedCounts;
+        participationChart.update();
+    } else {
+        participationChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sortedNames,
+                datasets: [{
+                    label: 'Times Selected',
+                    data: sortedCounts,
+                    backgroundColor: 'rgba(124, 110, 232, 0.7)',
+                    borderColor: 'rgba(168, 216, 234, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Selected ${context.raw} time${context.raw === 1 ? '' : 's'}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#f0f8ff'
+                        },
+                        grid: {
+                            color: 'rgba(168, 216, 234, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#f0f8ff'
+                        },
+                        grid: {
+                            color: 'rgba(168, 216, 234, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Update your loadLogs function to call updateChart
+function loadLogs() {
+    db.collection('logs').orderBy('date', 'desc').onSnapshot(snapshot => {
+        // ... existing table code ...
+        
+        // Add this at the end:
+        updateChart();
+    });
+}
