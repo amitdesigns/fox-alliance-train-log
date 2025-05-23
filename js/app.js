@@ -1,4 +1,4 @@
-// Initialize Firebase
+
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
@@ -9,7 +9,7 @@ let participationChart = null;
 let currentChartType = 'doughnut';
 let chartData = { names: [], counts: [] }; // Store chart data globally
 
-// DOM Elements
+
 const elements = {
     loginBtn: document.getElementById('login-btn'),
     addNewBtn: document.getElementById('add-new-btn'),
@@ -24,13 +24,13 @@ const elements = {
     chartTab: document.getElementById('chart-tab-pane')
 };
 
-// Initialize the application
+
 function init() {
     setupEventListeners();
     auth.onAuthStateChanged(handleAuthChange);
 }
 
-// Set up all event listeners
+
 function setupEventListeners() {
     // Auth and log management
     elements.loginBtn.addEventListener('click', toggleLogin);
@@ -39,7 +39,7 @@ function setupEventListeners() {
     document.getElementById('cancel-edit').addEventListener('click', cancelEdit);
     elements.addNewBtn.addEventListener('click', addNewEntry);
     
-    // Chart controls
+    
     elements.chartTypeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             currentChartType = btn.dataset.type;
@@ -49,7 +49,7 @@ function setupEventListeners() {
         });
     });
     
-    // Tab visibility observer
+   
     const observer = new MutationObserver(() => {
         if (elements.chartTab.classList.contains('active') && !participationChart) {
             updateChart();
@@ -62,7 +62,7 @@ function setupEventListeners() {
     });
 }
 
-// Handle authentication state changes
+
 function handleAuthChange(user) {
     currentUser = user;
     updateUI();
@@ -136,7 +136,7 @@ function loadLogs() {
                         </td>` : ''}
                     </tr>`;
                 
-                // Count participations
+                
                 [data.person1, data.person2, data.person3].forEach(name => {
                     if (name) nameCounts[name] = (nameCounts[name] || 0) + 1;
                 });
@@ -147,12 +147,12 @@ function loadLogs() {
                 ? '<div class="alert alert-info">No participation data yet</div>' 
                 : tableHTML;
             
-            // Add edit event listeners
+            
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => editEntry(btn.dataset.id));
             });
             
-            // Process and store chart data
+          
             processChartData(nameCounts);
         },
         error => {
@@ -166,12 +166,12 @@ function processChartData(nameCounts) {
     const names = Object.keys(nameCounts);
     const counts = Object.values(nameCounts);
     
-    // Sort by count (descending)
+   
     const sortedIndices = [...Array(names.length).keys()].sort((a, b) => counts[b] - counts[a]);
     chartData.names = sortedIndices.map(i => names[i]);
     chartData.counts = sortedIndices.map(i => counts[i]);
     
-    // Update chart if it's visible
+    
     if (elements.chartTab.classList.contains('active')) {
         updateChart();
     }
@@ -267,7 +267,7 @@ function getChartOptions() {
     return commonOptions;
 }
 
-// Existing entry management functions
+
 function addNewEntry() {
     editingId = null;
     elements.formTitle.textContent = 'Add New Entry';
@@ -328,5 +328,5 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
 
-// Initialize the app
+
 init();
