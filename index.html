@@ -8,9 +8,10 @@
         :root {
             --ice-blue: #a8d8ea;
             --frozen-purple: #7c6ee8;
-            --snow-white: #ffffff; /* Changed to pure white for better visibility */
+            --snow-white: #ffffff;
             --dark-ice: #3a4a7b;
             --crystal-teal: #00c1b3;
+            --gold: #ffc107;
         }
         
         body {
@@ -27,91 +28,74 @@
             margin: 20px 0;
             text-shadow: 0 0 10px rgba(168, 216, 234, 0.5);
             font-weight: 700;
-            letter-spacing: 1px;
         }
         
-        #admin-controls {
-            margin-bottom: 30px;
-            padding: 15px;
-            background: rgba(58, 74, 123, 0.7);
-            border-radius: 10px;
-            border: 1px solid var(--ice-blue);
-            box-shadow: 0 0 15px rgba(168, 216, 234, 0.3);
-        }
-        
-        #log-table {
-            background: rgba(31, 41, 71, 0.8);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            margin-bottom: 20px;
-        }
-        
-        #edit-form {
-            background: rgba(31, 41, 71, 0.9);
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 30px;
-            display: none;
-            border: 1px solid var(--crystal-teal);
-            box-shadow: 0 0 20px rgba(0, 193, 179, 0.3);
-        }
-        
-        /* Table Styling Fixes */
-        .table {
-            color: var(--snow-white) !important;
-            margin-bottom: 0;
-            background-color: transparent !important;
-        }
-        
-        .table th, .table td {
-            border-color: rgba(168, 216, 234, 0.3) !important;
-            padding: 12px !important;
-            color: var(--snow-white) !important;
-        }
-        
-        .table thead th {
-            background-color: var(--frozen-purple) !important;
-            border-bottom: 2px solid var(--ice-blue) !important;
-            color: white !important;
-        }
-        
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(168, 216, 234, 0.1) !important;
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: rgba(124, 110, 232, 0.2) !important;
-        }
-        
-        /* Chart Styling */
-        #participationChart {
-            max-height: 400px;
-            width: 100% !important;
-            height: 400px !important;
-            background: rgba(31, 41, 71, 0.7);
-            border-radius: 8px;
-            padding: 15px;
-        }
-        
-        /* Other Elements */
         .frozen-card {
             background: rgba(58, 74, 123, 0.7);
             border-radius: 10px;
             padding: 20px;
             border: 1px solid var(--ice-blue);
-            box-shadow: 0 0 15px rgba(168, 216, 234, 0.2);
             margin-bottom: 20px;
         }
         
-        .btn-outline-primary {
+        .nav-tabs {
+            border-bottom: 1px solid var(--ice-blue);
+        }
+        
+        .nav-tabs .nav-link {
             color: var(--ice-blue);
+            border: 1px solid transparent;
+            margin-right: 5px;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--snow-white);
+            background-color: var(--frozen-purple);
             border-color: var(--ice-blue);
         }
         
-        .btn-outline-primary:hover {
-            background-color: var(--ice-blue);
-            color: var(--dark-ice);
+        .nav-tabs .nav-link:hover {
+            border-color: var(--ice-blue);
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+        
+        #chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .chart-type-selector {
+            margin-bottom: 15px;
+        }
+        
+        .btn-viz {
+            background: rgba(31, 41, 71, 0.7);
+            color: var(--ice-blue);
+            border: 1px solid var(--ice-blue);
+            margin-right: 5px;
+        }
+        
+        .btn-viz.active {
+            background: var(--frozen-purple);
+            color: white;
+        }
+        
+        .table-dark {
+            color: var(--snow-white);
+            background-color: rgba(31, 41, 71, 0.8);
+        }
+        
+        .table-dark th {
+            background-color: var(--frozen-purple);
+            border-color: var(--ice-blue);
+        }
+        
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(168, 216, 234, 0.1);
         }
     </style>
 </head>
@@ -119,47 +103,74 @@
     <div class="container">
         <h1>❄️ Fox Alliance Train Log ❄️</h1>
         
-        <div id="admin-controls">
+        <div id="admin-controls" class="mb-4">
             <button id="login-btn" class="btn btn-outline-primary">Admin Login</button>
             <button id="add-new-btn" class="btn btn-success ms-2" style="display: none;">
                 ✨ Add New Entry
             </button>
         </div>
         
-        <div id="log-table" class="table-responsive"></div>
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="logTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="log-tab" data-bs-toggle="tab" data-bs-target="#log-tab-pane" type="button" role="tab">
+                    📝 Log Entries
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart-tab-pane" type="button" role="tab">
+                    📊 Participation Chart
+                </button>
+            </li>
+        </ul>
         
-        <div id="edit-form">
-            <h3 id="form-title">Add New Entry</h3>
-            <form id="entry-form">
-                <div class="mb-3">
-                    <label class="form-label">📅 Date</label>
-                    <input type="date" id="log-date" class="form-control" required>
+        <!-- Tab Content -->
+        <div class="tab-content frozen-card" id="logTabsContent">
+            <!-- Log Entries Tab -->
+            <div class="tab-pane fade show active" id="log-tab-pane" role="tabpanel">
+                <div id="log-table" class="table-responsive"></div>
+                
+                <div id="edit-form" style="display: none;">
+                    <h3 id="form-title">Add New Entry</h3>
+                    <form id="entry-form">
+                        <div class="mb-3">
+                            <label class="form-label">📅 Date</label>
+                            <input type="date" id="log-date" class="form-control" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">👤 Person 1</label>
+                                <input type="text" id="person1" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">👤 Person 2</label>
+                                <input type="text" id="person2" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">👤 Person 3</label>
+                                <input type="text" id="person3" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary me-2">💾 Save</button>
+                            <button type="button" id="cancel-edit" class="btn btn-outline-secondary">❌ Cancel</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Person 1</label>
-                        <input type="text" id="person1" class="form-control" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Person 2</label>
-                        <input type="text" id="person2" class="form-control" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">👤 Person 3</label>
-                        <input type="text" id="person3" class="form-control" required>
-                    </div>
+            </div>
+            
+            <!-- Chart Tab -->
+            <div class="tab-pane fade" id="chart-tab-pane" role="tabpanel">
+                <div class="chart-type-selector text-center">
+                    <button class="btn btn-viz active" data-type="doughnut">Doughnut</button>
+                    <button class="btn btn-viz" data-type="bar">Bar Chart</button>
+                    <button class="btn btn-viz" data-type="pie">Pie Chart</button>
                 </div>
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary me-2">💾 Save</button>
-                    <button type="button" id="cancel-edit" class="btn btn-outline-secondary">❌ Cancel</button>
+                
+                <div id="chart-container">
+                    <canvas id="participationChart"></canvas>
                 </div>
-            </form>
-        </div>
-        
-        <!-- Participation Chart -->
-        <div class="frozen-card">
-            <h3>📊 Participation Chart</h3>
-            <canvas id="participationChart"></canvas>
+            </div>
         </div>
     </div>
 
